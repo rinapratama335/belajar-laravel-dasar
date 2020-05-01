@@ -26,7 +26,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        return view('create');
     }
 
     /**
@@ -37,7 +37,18 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $name = $request->get('name');
+        $detail = $request->get('detail');
+        $author = $request->get('author');
+
+        $posts = DB::insert('insert into posts(name, detail, author) value(?,?,?)', [$name, $detail, $author]);
+        if($posts){
+            $res = redirect('posts')->with('success', 'Data berhasil disimpan');
+        } else {
+            $res = redirect('posts/create')->with('danger', 'Input data gagal, silahkan coba lagi');
+        }
+
+        return $res;
     }
 
     /**
