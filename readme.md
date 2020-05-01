@@ -1,73 +1,39 @@
-## Get All Data Dengan Laravel
+## Membuat Fitur Tambah Data
 
-1. Terlebih dahulu setting databse di file `.env` :
+1. Di controller `PostController` kita ubah fungsi `create` dengan mengubah kode menjadi seperti ini :
 ```
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=belajar-laravel-dasar
-DB_USERNAME=root
-DB_PASSWORD=
+public function create() {
+    return view('create');
+}
 ```
-Sesuaikan dengan pengaturan databasenya.
+Kode di atas akan memanggil view `create`.
 
-2. Buat Model `Post` sekaligus migrationnya :
+2. Buat file `create` di folder views dan tambahkan kode berikut :
 ```
-php artisan make:model Post -m
-```
+@extends('layout');
 
-3. Edit file migration yang baru dibuat (`create_posts_table`) di folder `database/migrations` :
-```
-public function up()
-    {
-        Schema::create('posts', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('name');
-            $table->text('detail');
-            $table->string('author');
-            $table->timestamps();
-        });
-    }
-```
-Jalankan migrationnya : `php artisan migrate`
-
-4. Buat controller `PostController` :
-`php artisan make:controller PostController --resource`
-Kemudian di function index kita buat kode untuk mengambil data dari tabel `posts` :
-```
-public function index()
-    {
-        //Ambil semua data
-        $posts = DB::select('select * from posts');
-        return view('index', ['posts' => $posts]);
-    }
-```
-
-5. Jangan lupa kita buat routenya :
-```
-Route::get('/', 'PostController@index');
-Route::resource('posts', 'PostController');
-```
-Dengan `resource` maka laravel akan otomatis memiliki fungsi `index`, `show`, `create`, `store`, `edit`, `update`, dan `destroy` untuk controller yang didefinisikan.
-
-6. Kemudian kita akan buat layout untuk menampilkan semua page yang akan kita buat :
-```
-<body>
-    <div class="container">
-        <p><br></p>
-        @yield('content')
-    </div>
-</body>
-```
-`@yield` ini akan menampilkan setiap page yang dibuat nantinya. sedangkan `@yield('content')` adalah nama section/page yang digunakan untuk menampilkan page-nya.
-
-7. Terakhir kita buat view `index` sebagi tempat menampilkan datanya
-```
-@extends('layout')
 @section('content')
-.
-.
-.
+    .
+    .
+    form tambah data di sini
+    .
+    .
 @endsection
 ```
-`@extends('layout')` artinya kita memanggil file view `layout`. Sedangkan `@section('content')` artinya kita membuat tampilan yang ditampilkan melalui view layout yang didefinisikan di `yield`.
+3. Untuk menyimpan data kita gunakan fungsi `store` di controller `PostController` :
+```
+public function store(Request $request) {
+    $name = $request->get('name');
+    $detail = $request->get('detail');
+    $author = $request->get('author');
+
+    $posts = DB::insert('insert into posts(name, detail, author) value(?,?,?)', [$name, $detail, $author]);
+    if($posts){
+        $res = redirect('posts')->with('success', 'Data berhasil disimpan');
+    } else {
+        $res = redirect('posts/create')->with('danger', 'Input data gagal, silahkan coba lagi');
+    }
+
+    return $res;
+}
+```
