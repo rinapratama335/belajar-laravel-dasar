@@ -70,7 +70,8 @@ class PostController extends Controller
      */
     public function edit($id)
     {
-        //
+        $posts = DB::select('select * from posts where id=?', [$id]);
+        return view('edit', ['posts' => $posts]);
     }
 
     /**
@@ -82,7 +83,18 @@ class PostController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $name = $request->get('name');
+        $detail = $request->get('detail');
+        $author = $request->get('author');
+
+        $posts = DB::update('update posts set name=?, detail=?, author=? where id=?', [$name, $detail, $author, $id]);
+        if($posts){
+            $res = redirect('posts')->with('success', 'Data berhasil diubah');
+        } else {
+            $res = redirect('posts/edit/'.$id)->with('danger', 'Perubahan data gagal, silahkan coba lagi');
+        }
+
+        return $res;
     }
 
     /**
@@ -93,6 +105,8 @@ class PostController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $posts = DB::delete('delete from posts where id=?', [$id]);
+        $res = redirect('posts')->with('success','Berhasil menghapus data');
+        return $res;
     }
 }
