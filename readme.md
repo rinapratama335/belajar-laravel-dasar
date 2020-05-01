@@ -1,39 +1,73 @@
-## Membuat Fitur Tambah Data
+## Membuat Fitur Edit Data Dan Delete Data
 
-1. Di controller `PostController` kita ubah fungsi `create` dengan mengubah kode menjadi seperti ini :
+1. Pertama kita buat fungsi edit terlebih dahulu, edit kode fungsi `edit` di controller `PostController` menjadi seperti ini :
 ```
-public function create() {
-    return view('create');
+public function edit($id) {
+    $posts = DB::select('select * from posts where id=?', [$id]);
+    return view('edit', ['posts' => $posts]);
 }
 ```
-Kode di atas akan memanggil view `create`.
 
-2. Buat file `create` di folder views dan tambahkan kode berikut :
+2. Kemudian kita buat file view `edit.blade.php`. Isinya sebenarnya sama dengan tampilan tambah data, hanya terdapat sedikit perbedaan di formnya :
 ```
-@extends('layout');
+@foreach($posts as $post)
+    <form action="{{ action('PostController@update', $post->id) }}" method="post">
+        @csrf
+        @method('PUT')
+        <div class="form-group">
+            <label>Nama</label>
+            <input type="text" class="form-control" name="name" value={{ $post->name }}>
+        </div>
+        <div class="form-group">
+            <label>Detail</label>
+            <textarea name="detail" class="form-control">{{ $post->detail }}</textarea>
+        </div>
+        <div class="form-group">
+            <label>Author</label>
+            <input type="text" class="form-control" name="author" value={{ $post->author }}>
+        </div>
+        <button class="btn btn-primary">Submit <i class="fas fa-send"></i></button>
+        <a href="{{ action('PostController@index') }}" class="btn btn-warning">Back</a>
+    </form>
+@endforeach
+```
+JANGAN LUPA tambahkan `@method('PUT')` supaya laravel mengenali bahwa form ini adalah edit data.
 
-@section('content')
-    .
-    .
-    form tambah data di sini
-    .
-    .
-@endsection
+3. Lalu di method `update` controller `PostController` kita buat untuk update data :
 ```
-3. Untuk menyimpan data kita gunakan fungsi `store` di controller `PostController` :
-```
-public function store(Request $request) {
-    $name = $request->get('name');
-    $detail = $request->get('detail');
-    $author = $request->get('author');
+public function update(Request $request, $id)
+    {
+        $name = $request->get('name');
+        $detail = $request->get('detail');
+        $author = $request->get('author');
 
-    $posts = DB::insert('insert into posts(name, detail, author) value(?,?,?)', [$name, $detail, $author]);
-    if($posts){
-        $res = redirect('posts')->with('success', 'Data berhasil disimpan');
-    } else {
-        $res = redirect('posts/create')->with('danger', 'Input data gagal, silahkan coba lagi');
+        $posts = DB::update('update posts set name=?, detail=?, author=? where id=?', [$name, $detail, $author, $id]);
+        if($posts){
+            $res = redirect('posts')->with('success', 'Data berhasil diubah');
+        } else {
+            $res = redirect('posts/edit/'.$id)->with('danger', 'Perubahan data gagal, silahkan coba lagi');
+        }
+
+        return $res;
     }
+```
 
+4. Selanjutnya kita buat untuk hapus data, pertama kita tambahkan kode berikut :
+```
+<form......>
+    @method('DELETE')
+    @csrf
+    .
+    .
+    .
+</form>
+```
+
+5. Di controller `PostController` method `destroy` kita buat kode untuk hapus data :
+```
+public function destroy($id) {
+    $posts = DB::delete('delete from posts where id=?', [$id]);
+    $res = redirect('posts')->with('success','Berhasil menghapus data');
     return $res;
 }
 ```

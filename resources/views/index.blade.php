@@ -35,6 +35,9 @@
                 <td>{{ $post->author }}</td>
                 <td>
                     <form action="{{ action('PostController@destroy', $post->id) }}" method="post">
+                        @method('DELETE')
+                        @csrf
+
                         <a href="{{ action('PostController@show', $post->id) }}" class="btn btn-info btn-sm"><i class="fas fa-search"></i></a>
                         <a href="{{ action('PostController@edit', $post->id) }}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
 
